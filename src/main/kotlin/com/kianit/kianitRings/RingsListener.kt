@@ -37,11 +37,10 @@ class RingsListener(private var plugin: KianitRings, private var ringManager: Ri
             }
 
             var item = event.player.inventory.itemInMainHand
-            var meta = item.itemMeta
-
-            meta.lore?.add(event.player.inventory.itemInOffHand.displayName().toString())
-            event.player.inventory.itemInMainHand.setItemMeta(meta)
+            val str = event.player.inventory.itemInOffHand.displayName()
+            ringManager.addRingLore(item, str, event.player)
             event.player.inventory.itemInOffHand.amount -= 1
         }
+        event.isCancelled = true
     }
 }
