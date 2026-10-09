@@ -5,13 +5,20 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInputEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
-import com.kianit.kianitRings.RingManager
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
-class RingsListener(private var plugin: KianitRings) : Listener {
+class RingsListener(private var plugin: KianitRings, private var ringManager: RingManager) : Listener {
     @EventHandler
     fun onPlayerInteractEvent(event: PlayerInteractEvent) {
+        if (!event.action.isRightClick) {
+            return
+        }
+
+        if (!event.player.isSneaking) {
+            return
+        }
+
         if (event.hand == EquipmentSlot.OFF_HAND) {
             return
         }
@@ -20,11 +27,15 @@ class RingsListener(private var plugin: KianitRings) : Listener {
             return
         }
 
-        if (!RingManager(plugin).isRing(event.item!!)) {
+        if (!ringManager.isRing(event.item!!)) {
             return
         }
 
-        if (event.player.inventory.itemInOffHand == ItemStack(Material.PAPER)) {
+        if (event.player.inventory.itemInOffHand.type == Material.PAPER && !ringManager.isRingPrivated(event.item!!)) {
+            if (!event.player.inventory.itemInOffHand.itemMeta.hasDisplayName()) {
+                return
+            }
+
             var item = event.player.inventory.itemInMainHand
             var meta = item.itemMeta
 

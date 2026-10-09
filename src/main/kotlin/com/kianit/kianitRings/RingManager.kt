@@ -1,7 +1,6 @@
 package com.kianit.kianitRings
 
 import dev.lone.itemsadder.api.CustomStack
-import jdk.tools.jlink.resources.plugins
 import org.bukkit.inventory.ItemStack
 
 class RingManager(private var plugin: KianitRings) {
@@ -17,6 +16,7 @@ class RingManager(private var plugin: KianitRings) {
             return false
         }
     }
+
     fun isRingPrivated(item: ItemStack) : Boolean {
         if (!isRing(item)) {
             return false

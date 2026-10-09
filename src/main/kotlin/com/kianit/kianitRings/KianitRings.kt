@@ -8,7 +8,9 @@ class KianitRings : JavaPlugin() {
         saveDefaultConfig()
         getCommand("rings")?.setExecutor(CommandManager(this))
         ringsConfig = RingsConfig(this)
+        ringsConfig.load()
 
+        server.pluginManager.registerEvents(RingsListener(this, RingManager(this)), this)
     }
 
     override fun onDisable() {
