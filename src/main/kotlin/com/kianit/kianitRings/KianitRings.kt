@@ -7,6 +7,7 @@ class KianitRings : JavaPlugin() {
     override fun onEnable() {
         saveDefaultConfig()
         getCommand("rings")?.setExecutor(CommandManager(this))
+        ringsConfig = RingsConfig(this)
 
     }
 
@@ -14,4 +15,6 @@ class KianitRings : JavaPlugin() {
         // Plugin shutdown logic
     }
 
+    lateinit var ringsConfig: RingsConfig
+            private set
 }

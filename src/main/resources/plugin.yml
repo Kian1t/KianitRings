@@ -10,5 +10,9 @@ load: POSTWORLD
 
 commands:
   rings:
-    permission: OP
+    permission: kianitrings.admin
     usage: /rings reload
+
+permissions:
+  kianitrings.admin:
+    default: op

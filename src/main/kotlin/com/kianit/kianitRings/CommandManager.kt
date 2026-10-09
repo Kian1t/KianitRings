@@ -3,7 +3,6 @@ package com.kianit.kianitRings
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.plugin.java.JavaPlugin
 
 class CommandManager(private val plugin: KianitRings): CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
@@ -20,6 +19,7 @@ class CommandManager(private val plugin: KianitRings): CommandExecutor {
         plugin.saveDefaultConfig()
         plugin.reloadConfig()
         sender.sendMessage("Конфиг перезагружен")
+        plugin.ringsConfig.load()
         return true
     }
 }
