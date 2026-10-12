@@ -3,6 +3,7 @@ package com.kianit.kianitRings
 import dev.lone.itemsadder.api.CustomStack
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Color
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
@@ -13,6 +14,8 @@ import org.w3c.dom.Text
 import java.util.function.Consumer
 
 class RingManager(private var plugin: KianitRings) {
+    val key = NamespacedKey(plugin, "privated")
+
     fun isRing(item: ItemStack) : Boolean {
         if (CustomStack.byItemStack(item) == null) {
             return false
@@ -30,7 +33,6 @@ class RingManager(private var plugin: KianitRings) {
         if (!isRing(item)) {
             return false
         }
-        val key = NamespacedKey(plugin, "privated")
         if (item.persistentDataContainer.has(key)) {
             return true
         } else {
@@ -38,13 +40,18 @@ class RingManager(private var plugin: KianitRings) {
         }
     }
 
-//    fun privateRing(item: ItemStack) : ItemStack {
-//        var result = item.clone()
-//        val key = NamespacedKey(plugin, "privated")
-//
-//        val pdc = item.persistentDataContainer.cop
-//        item.editPersistentDataContainer()
-//    }
+    fun privateRing(item: ItemStack, com: Component) : ItemStack {
+        var result = item.clone()
+        val meta = result.itemMeta
+
+        meta.persistentDataContainer.set(key, PersistentDataType.STRING, "privated")
+        meta.lore!!.add("\n")
+        val sign = Component.text("Партнер: ").append(com).color(TextColor.color(0x3AB3DA)).decoration(TextDecoration.ITALIC, false)
+        meta.lore()!!.add(sign)
+
+        result.itemMeta = meta
+        return result
+    }
 
     fun addRingLore(item: ItemStack, com: Component, player: Player) : ItemStack {
         var result = item.clone()
@@ -62,6 +69,4 @@ class RingManager(private var plugin: KianitRings) {
         return result
 
     }
-
-
 }

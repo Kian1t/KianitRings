@@ -41,6 +41,17 @@ class RingsListener(private var plugin: KianitRings, private var ringManager: Ri
             ringManager.addRingLore(item, str, event.player)
             event.player.inventory.itemInOffHand.amount -= 1
         }
+
+        if (event.player.inventory.itemInOffHand.type == Material.DIAMOND && !ringManager.isRingPrivated(event.item!!)) {
+            if (!event.player.inventory.itemInOffHand.itemMeta.hasDisplayName()) {
+                return
+            }
+
+            var item = event.player.inventory.itemInMainHand
+            val str = event.player.inventory.itemInOffHand.displayName()
+            ringManager.privateRing(item, str)
+            event.player.inventory.itemInOffHand.amount -= 1
+        }
         event.isCancelled = true
     }
 }
