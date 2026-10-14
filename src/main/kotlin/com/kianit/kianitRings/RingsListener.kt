@@ -1,16 +1,18 @@
 package com.kianit.kianitRings
 
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes.player
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
-import org.bukkit.event.player.PlayerPickupItemEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 
 class RingsListener(private val plugin: KianitRings, private val ringManager: RingManager) : Listener {
     @EventHandler
@@ -62,62 +64,55 @@ class RingsListener(private val plugin: KianitRings, private val ringManager: Ri
     }
 
     @EventHandler
-    fun onPlayerPickupItem(event: PlayerPickupItemEvent) {
-        if (!ringManager.isRing(event.item.itemStack)) {
-            return
-        }
-
-        val player = event.player
-        val item = event.item.itemStack
-
-        if (!ringManager.isPlayerHasAccess(item, player)) {
+    fun onPlayerAttemptPickupItem(event: PlayerAttemptPickupItemEvent) {
+        if (isBlocked(event.item.itemStack, event.player)) {
             event.isCancelled = true
-            return
         }
     }
 
     @EventHandler
-    fun onPlayerItemHeldEvent(event: PlayerAttemptPickupItemEvent) {
-        val player = event.player
-        val item = event.item.itemStack
-
-        if (item == null) {
-            return
-        }
-
-        if (!ringManager.isRing(item)) {
-            return
-        }
-
-        if (!ringManager.isPlayerHasAccess(item, player)) {
+    fun onPlayerItemHeld(event: PlayerItemHeldEvent) {
+        if (isBlocked(event.player.inventory.getItem(event.newSlot), event.player)) {
             event.isCancelled = true
-            return
+        }
+    }
+
+    @EventHandler
+    fun onPlayerSwapHandItems(event: PlayerSwapHandItemsEvent) {
+        if (isBlocked(event.mainHandItem, event.player) || isBlocked(event.offHandItem, event.player)) {
+            event.isCancelled = true
         }
     }
 
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
         val player = event.whoClicked as? Player ?: return
-        var item = event.currentItem ?: return
 
-        if (!ringManager.isRing(item)) {
-            return
+        val items = mutableListOf(event.currentItem, event.cursor)
+        if (event.hotbarButton >= 0) {
+            items.add(player.inventory.getItem(event.hotbarButton))
         }
-        if (!ringManager.isPlayerHasAccess(item, player)) {
+        if (event.click == ClickType.SWAP_OFFHAND) {
+            items.add(player.inventory.itemInOffHand)
+        }
+
+        if (items.any { isBlocked(it, player) }) {
             event.isCancelled = true
-            return
-        }
-
-        item = event.cursor
-
-        if (!ringManager.isRing(item)) {
-            return
-        }
-        if (!ringManager.isPlayerHasAccess(item, player)) {
-            event.isCancelled = true
-            return
         }
     }
 
+    @EventHandler
+    fun onInventoryDrag(event: InventoryDragEvent) {
+        val player = event.whoClicked as? Player ?: return
+        if (isBlocked(event.oldCursor, player)) {
+            event.isCancelled = true
+        }
+    }
 
+    private fun isBlocked(item: ItemStack?, player: Player) : Boolean {
+        if (item == null || item.isEmpty) {
+            return false
+        }
+        return ringManager.isRing(item) && !ringManager.isPlayerHasAccess(item, player)
+    }
 }

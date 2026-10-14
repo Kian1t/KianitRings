@@ -32,10 +32,9 @@ class RingManager(private val plugin: KianitRings) {
 
         if (meta.persistentDataContainer.get(ownerKey, PersistentDataType.STRING) == player.uniqueId.toString()) {
             return true
-        }; if (meta.persistentDataContainer.get(partnerKey, PersistentDataType.STRING) == player.name) {
-            return true
         }
-        return false
+
+        return meta.persistentDataContainer.get(partnerKey, PersistentDataType.STRING).equals(player.name, ignoreCase = true)
     }
 
     fun privateRing(item: ItemStack, com: Component, owner: Player) : ItemStack {
@@ -45,6 +44,9 @@ class RingManager(private val plugin: KianitRings) {
         val partnerName = PlainTextComponentSerializer.plainText().serialize(com).trim()
         meta.persistentDataContainer.set(ownerKey, PersistentDataType.STRING, owner.uniqueId.toString())
         meta.persistentDataContainer.set(partnerKey, PersistentDataType.STRING, partnerName)
+
+        val name = (meta.displayName() ?: result.effectiveName()).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+        meta.displayName(name.append(Component.text(" ")).append(com))
 
         val lore = meta.lore() ?: ArrayList<Component>()
         lore.add(Component.empty())
