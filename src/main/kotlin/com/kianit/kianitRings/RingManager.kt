@@ -23,6 +23,16 @@ class RingManager(private val plugin: KianitRings) {
         return isRing(item) && item.persistentDataContainer.has(ownerKey)
     }
 
+    fun isPlayerHasAccess(item: ItemStack, player: Player) : Boolean {
+        val meta = item.itemMeta ?: return false
+        if (meta.persistentDataContainer.get(ownerKey, PersistentDataType.STRING) == player.uniqueId.toString()) {
+            return true
+        }; if (meta.persistentDataContainer.get(partnerKey, PersistentDataType.STRING) == player.name) {
+            return true
+        }
+        return false
+    }
+
     fun privateRing(item: ItemStack, com: Component, owner: Player) : ItemStack {
         val result = item.clone()
         val meta = result.itemMeta
