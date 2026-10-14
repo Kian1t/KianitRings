@@ -6,6 +6,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.player.PlayerAttemptPickupItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerPickupItemEvent
@@ -76,9 +77,14 @@ class RingsListener(private val plugin: KianitRings, private val ringManager: Ri
     }
 
     @EventHandler
-    fun onPlayerItemHeldEvent(event: PlayerItemHeldEvent) {
+    fun onPlayerItemHeldEvent(event: PlayerAttemptPickupItemEvent) {
         val player = event.player
-        val item = event.player.inventory.itemInMainHand
+        val item = event.item.itemStack
+
+        if (item == null) {
+            return
+        }
+
         if (!ringManager.isRing(item)) {
             return
         }
@@ -92,7 +98,17 @@ class RingsListener(private val plugin: KianitRings, private val ringManager: Ri
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
         val player = event.whoClicked as? Player ?: return
-        val item = event.currentItem ?: return
+        var item = event.currentItem ?: return
+
+        if (!ringManager.isRing(item)) {
+            return
+        }
+        if (!ringManager.isPlayerHasAccess(item, player)) {
+            event.isCancelled = true
+            return
+        }
+
+        item = event.cursor
 
         if (!ringManager.isRing(item)) {
             return

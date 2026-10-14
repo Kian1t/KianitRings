@@ -25,6 +25,11 @@ class RingManager(private val plugin: KianitRings) {
 
     fun isPlayerHasAccess(item: ItemStack, player: Player) : Boolean {
         val meta = item.itemMeta ?: return false
+
+        if (!isRingPrivated(item)) {
+            return true
+        }
+
         if (meta.persistentDataContainer.get(ownerKey, PersistentDataType.STRING) == player.uniqueId.toString()) {
             return true
         }; if (meta.persistentDataContainer.get(partnerKey, PersistentDataType.STRING) == player.name) {
