@@ -4,69 +4,53 @@ import dev.lone.itemsadder.api.CustomStack
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
-import org.bukkit.Color
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
-import org.w3c.dom.Text
-import java.util.function.Consumer
 
-class RingManager(private var plugin: KianitRings) {
-    val key = NamespacedKey(plugin, "privated")
+class RingManager(private val plugin: KianitRings) {
+    val ownerKey = NamespacedKey(plugin, "owner")
+    val partnerKey = NamespacedKey(plugin, "partner")
 
     fun isRing(item: ItemStack) : Boolean {
-        if (CustomStack.byItemStack(item) == null) {
-            return false
-        }
-
-        var customItem = CustomStack.byItemStack(item)
-        if (customItem?.namespacedID in plugin.ringsConfig.ringsIds) {
-            return true
-        } else {
-            return false
-        }
+        val customItem = CustomStack.byItemStack(item) ?: return false
+        return customItem.namespacedID in plugin.ringsConfig.ringsIds
     }
 
     fun isRingPrivated(item: ItemStack) : Boolean {
-        if (!isRing(item)) {
-            return false
-        }
-        if (item.persistentDataContainer.has(key)) {
-            return true
-        } else {
-            return false
-        }
+        return isRing(item) && item.persistentDataContainer.has(ownerKey)
     }
 
-    fun privateRing(item: ItemStack, com: Component) : ItemStack {
-        var result = item.clone()
+    fun privateRing(item: ItemStack, com: Component, owner: Player) : ItemStack {
+        val result = item.clone()
         val meta = result.itemMeta
 
-        meta.persistentDataContainer.set(key, PersistentDataType.STRING, "privated")
-        meta.lore!!.add("\n")
+        val partnerName = PlainTextComponentSerializer.plainText().serialize(com).trim()
+        meta.persistentDataContainer.set(ownerKey, PersistentDataType.STRING, owner.uniqueId.toString())
+        meta.persistentDataContainer.set(partnerKey, PersistentDataType.STRING, partnerName)
+
+        val lore = meta.lore() ?: ArrayList<Component>()
+        lore.add(Component.empty())
         val sign = Component.text("Партнер: ").append(com).color(TextColor.color(0x3AB3DA)).decoration(TextDecoration.ITALIC, false)
-        meta.lore()!!.add(sign)
+        lore.add(sign)
+        meta.lore(lore)
 
         result.itemMeta = meta
         return result
     }
 
-    fun addRingLore(item: ItemStack, com: Component, player: Player) : ItemStack {
-        var result = item.clone()
-        var meta = item.itemMeta
+    fun addRingLore(item: ItemStack, com: Component) : ItemStack {
+        val result = item.clone()
+        val meta = result.itemMeta
 
-        var signature = com.color(TextColor.color(0x9D9D97))
-        var lore = meta.lore()
-        if (lore == null) {
-            lore = ArrayList<Component>()
-        }
-
-        lore.add(signature)
+        val text = com.color(TextColor.color(0x9D9D97)).decoration(TextDecoration.ITALIC, false)
+        val lore = meta.lore() ?: ArrayList<Component>()
+        lore.add(text)
         meta.lore(lore)
-        result.setItemMeta(meta)
-        return result
 
+        result.itemMeta = meta
+        return result
     }
 }

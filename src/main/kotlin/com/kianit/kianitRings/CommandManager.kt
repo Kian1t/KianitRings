@@ -18,8 +18,8 @@ class CommandManager(private val plugin: KianitRings): CommandExecutor {
 
         plugin.saveDefaultConfig()
         plugin.reloadConfig()
-        sender.sendMessage("Конфиг перезагружен")
         plugin.ringsConfig.load()
+        sender.sendMessage("Конфиг перезагружен")
         return true
     }
 }
